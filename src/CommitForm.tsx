@@ -18,12 +18,24 @@ const CommitForm: React.FC = () => {
   const [response, setResponse] = useState<CommitResponse | null>(null);
   const [error, setError] = useState("");
 
+  // Frontend validation function to check if text is a git diff
+  const isGitDiff = (text: string) => {
+    const diffPattern = /diff --git a\/.+ b\/.+|^@@ -\d+,\d+ \+\d+,\d+ @@|^\+\+\+ b\/.+|^--- a\/.+/m;
+    return diffPattern.test(text);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
     setResponse(null);
 
+    // Validate diff before calling backend
+    if (!isGitDiff(diffContent)) {
+      setError("Please enter a valid git diff.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await axios.post<CommitResponse>(
         "http://localhost:8080/api/commit/generate",
