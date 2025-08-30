@@ -7,7 +7,7 @@ const Addition: React.FC = () => {
   const [b, setB] = useState<number>(0);
 
   function add(a: number, b: number): number {
-  return a - b;
+  return a * b;
 }
 
 
