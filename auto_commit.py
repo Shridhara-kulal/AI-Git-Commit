@@ -29,3 +29,5 @@ subprocess.run(["git", "commit", "-m", commit_message])
 
 print("✅ Commit done with AI-generated message:")
 print(commit_message)
+
+print()
