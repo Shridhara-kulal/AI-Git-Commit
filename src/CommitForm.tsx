@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./CommitForm.css"; // ✅ Import updated CSS
 
 interface CommitResponse {
   commitMessage: string;
@@ -18,9 +19,9 @@ const CommitForm: React.FC = () => {
   const [response, setResponse] = useState<CommitResponse | null>(null);
   const [error, setError] = useState("");
 
-  // Frontend validation function to check if text is a git diff
   const isGitDiff = (text: string) => {
-    const diffPattern = /diff --git a\/.+ b\/.+|^@@ -\d+,\d+ \+\d+,\d+ @@|^\+\+\+ b\/.+|^--- a\/.+/m;
+    const diffPattern =
+      /diff --git a\/.+ b\/.+|^@@ -\d+,\d+ \+\d+,\d+ @@|^\+\+\+ b\/.+|^--- a\/.+/m;
     return diffPattern.test(text);
   };
 
@@ -29,9 +30,8 @@ const CommitForm: React.FC = () => {
     setError("");
     setResponse(null);
 
-    // Validate diff before calling backend
     if (!isGitDiff(diffContent)) {
-      setError("Please enter a valid git diff.");
+      setError("⚠️ Please enter a valid git diff.");
       return;
     }
 
@@ -48,94 +48,106 @@ const CommitForm: React.FC = () => {
       );
       setResponse(res.data);
     } catch (err: any) {
-      setError(err.response?.data?.commitMessage || "Something went wrong");
+      setError(err.response?.data?.commitMessage || "❌ Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container" style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
-      <h1>AI Commit Message Generator</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Paste Git Diff:</label>
-          <textarea
-            rows={10}
-            style={{ width: "100%" }}
-            value={diffContent}
-            onChange={(e) => setDiffContent(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Style:</label>
-          <select value={style} onChange={(e) => setStyle(e.target.value)}>
-            <option value="CONVENTIONAL">Conventional</option>
-            <option value="GITMOJI">Gitmoji</option>
-            <option value="PLAIN">Plain</option>
-          </select>
-        </div>
-        <div>
-          <label>Number of Alternatives:</label>
-          <input
-            type="number"
-            min={1}
-            max={5}
-            value={numAlternatives}
-            onChange={(e) => setNumAlternatives(Number(e.target.value))}
-          />
-        </div>
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={generatePr}
-              onChange={(e) => setGeneratePr(e.target.checked)}
+    <div><h1>AI-Powered Git Commit Message Generator</h1>
+    <div className="commit-container">
+      {/* Left side → Form */}
+      <div className="form-section">
+        
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Paste Git Diff:</label>
+            <textarea
+              rows={10}
+              value={diffContent}
+              onChange={(e) => setDiffContent(e.target.value)}
+              required
             />
-            Generate PR
-          </label>
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? "Generating..." : "Generate Commit"}
-        </button>
-      </form>
+          </div>
+          <div>
+            <label>Style:</label>
+            <select value={style} onChange={(e) => setStyle(e.target.value)}>
+              <option value="CONVENTIONAL">Conventional</option>
+              <option value="GITMOJI">Gitmoji</option>
+              <option value="PLAIN">Plain</option>
+            </select>
+          </div>
+          <div>
+            <label>Number of Alternatives:</label>
+            <input
+              type="number"
+              min={1}
+              max={5}
+              value={numAlternatives}
+              onChange={(e) => setNumAlternatives(Number(e.target.value))}
+            />
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={generatePr}
+                onChange={(e) => setGeneratePr(e.target.checked)}
+              />
+              Generate PR
+            </label>
+          </div>
+          <div className="button-wrapper">
+            <button type="submit" disabled={loading}>
+              {loading ? "⏳ Generating..." : "🚀 Generate Commit"}
+            </button>
+          </div>
+        </form>
+        {error && <div className="error">{error}</div>}
+      </div>
 
-      {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
+      {/* Right side → Response */}
+      <div className="response-section">
+        {response ? (
+          <div className="response">
+            <h2>Primary Commit Message:</h2>
+            <p>{response.commitMessage}</p>
 
-      {response && (
-        <div style={{ marginTop: 20 }}>
-          <h2>Primary Commit Message:</h2>
-          <p>{response.commitMessage}</p>
+            {response.alternatives?.length > 0 && (
+              <>
+                <h3>Alternatives:</h3>
+                <ul>
+                  {response.alternatives.map((alt, idx) => (
+                    <li key={idx}>{alt}</li>
+                  ))}
+                </ul>
+              </>
+            )}
 
-          {response.alternatives && response.alternatives.length > 0 && (
-            <>
-              <h3>Alternatives:</h3>
-              <ul>
-                {response.alternatives.map((alt, idx) => (
-                  <li key={idx}>{alt}</li>
-                ))}
-              </ul>
-            </>
-          )}
+            {response.typeLabels?.length > 0 && (
+              <>
+                <h3>Labels:</h3>
+                <p>{response.typeLabels.join(", ")}</p>
+              </>
+            )}
 
-          {response.typeLabels && response.typeLabels.length > 0 && (
-            <>
-              <h3>Labels:</h3>
-              <p>{response.typeLabels.join(", ")}</p>
-            </>
-          )}
-
-          {generatePr && (
-            <>
-              <h3>PR Title:</h3>
-              <p>{response.prTitle}</p>
-              <h3>PR Body:</h3>
-              <pre>{response.prBody}</pre>
-            </>
-          )}
-        </div>
-      )}
+            {generatePr && (
+              <>
+                <h3>PR Title:</h3>
+                <p>{response.prTitle}</p>
+                <h3>PR Body:</h3>
+                <pre>{response.prBody}</pre>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="placeholder">
+            <p>💡 Generated commit messages will appear here...</p>
+          </div>
+        )}
+      </div>
+    </div>
     </div>
   );
 };

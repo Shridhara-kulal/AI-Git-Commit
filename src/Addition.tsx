@@ -6,14 +6,14 @@ const Addition: React.FC = () => {
   const [a, setA] = useState<number>(0);
   const [b, setB] = useState<number>(0);
 
-  function add(a: number, b: number): number {
-  return a + b;
+  function mul(a: number, b: number): number {
+  return a * b;
 }
 
 
   return (
     <div style={{ fontFamily: "sans-serif" }}>
-      <h3>Simple Addition</h3>
+      <h3>Simple Multiplication</h3>
       <input
         type="number"
         value={a}
@@ -27,7 +27,7 @@ const Addition: React.FC = () => {
         onChange={(e) => setB(Number(e.target.value))}
         placeholder="Second number"
       />
-      <span style={{ marginLeft: 8 }}>= {add(a, b)}</span>
+      <span style={{ marginLeft: 8 }}>= {mul(a, b)}</span>
     </div>
   );
 };

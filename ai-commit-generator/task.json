@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AI Auto Commit",
+      "type": "shell",
+      "command": "python auto_commit.py",
+      "problemMatcher": []
+    }
+  ]
+}
